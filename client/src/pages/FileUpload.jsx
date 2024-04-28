@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+// const {Cloudinary} = require("@cloudinary/url-gen");
+
 
 export default function FileUpload() {
     const [file, setFile] = useState(null);
@@ -9,6 +11,12 @@ export default function FileUpload() {
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
     };
+
+    const cld = new Cloudinary({
+        cloud: {
+          cloudName: 'demo'
+        }
+      });
 
     // Function to handle file upload
     const handleUpload = async () => {

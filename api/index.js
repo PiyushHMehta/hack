@@ -9,12 +9,19 @@ const Todo = require('./models/Todo');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { log } = require('console');
 require('dotenv').config()
-
+const cloudinary = require('cloudinary').v2 ; 
 const app = express()
 mongoose.connect(process.env.MONGO_URL)
 const jwtSecret = process.env.JWT_SECRET
 
+
+cloudinary.config({
+    cloud_name: "dbzhggoi6",
+    api_key: 317149825625866 ,
+    api_secret: "j7k12yGi6NKMztgCd7bvAVlmCiM"
+})
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
@@ -112,26 +119,53 @@ app.get('/get-todo', async (req, res) => {
     }
 })
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Check if the 'uploads' directory exists, if not, create it
-        const uploadDir = path.join(__dirname, 'uploads');
-        fs.mkdir(uploadDir, { recursive: true }, (err) => {
-            if (err) {
-                return cb(err, null);
-            }
-            cb(null, uploadDir);
-        });
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname);
-    }
-})
-const upload = multer({ storage: storage });
 
-app.post('/upload', upload.single('file'), (req, res) => {
-    // Access the uploaded file using req.file
-    // Process the file (save to database, etc.)
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         // Check if the 'uploads' directory exists, if not, create it
+//         const uploadDir = path.join(__dirname, 'uploads');
+//         fs.mkdir(uploadDir, { recursive: true }, (err) => {
+//             if (err) {
+//                 return cb(err, null);
+//             }
+//             cb(null, uploadDir);
+//         });
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, file.originalname);
+//     }
+// })
+// const upload = multer({ storage: storage });
+
+// const storage = new CloudinaryStorage({
+//     cloudinary: cloudinary,
+//     params: {
+//       folder: 'your_folder_name', // optional, specify the folder to upload to
+//       allowed_formats: ['jpg', 'png', 'jpeg'], // optional, specify the allowed file formats
+//       // You can add more configuration options as needed
+//     },
+//   });
+  
+
+  
+  // Middleware to handle file upload
+//   const uploadToCloudinary = (req, res, next) => {
+//     // Use multer middleware to handle file upload
+//     upload.single('file')(req, res, function(err) {
+//       if (err instanceof multer.MulterError) {
+//         // A Multer error occurred when uploading
+//         return res.status(500).json({ message: 'Multer error', error: err });
+//       } else if (err) {
+//         // An unknown error occurred
+//         return res.status(500).json({ message: 'Unknown error', error: err });
+//       }
+//       // File uploaded successfully
+//       next();
+//     });
+//   };
+
+app.post('/upload' ,(req, res) => {
+    console.log("Req file ",req.file);
     res.send('File uploaded successfully');
 });
 
@@ -151,4 +185,18 @@ app.post('/logout', (req, res) => {
     res.cookie('token', '').json(true)
 })
 
-app.listen(3000)
+app.post('/delete-Todo' , async (req ,res) => {
+    try {
+        const { id } = req.body ; 
+        console.log(id);
+        const deletedDoc = await Todo.findByIdAndDelete(id) ; 
+        // console.log(deletedDoc);
+        res.json({msg: "success"}) ; 
+    } catch (error) {
+        res.json(error) ; 
+    }
+})
+
+app.listen(3000 ,() => {
+    console.log('Listening on port',3000);
+})
